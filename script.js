@@ -1,321 +1,207 @@
-/* ===================================================
-DG LOGÍSTICA REVERSA
-SCRIPT.JS
-=================================================== */
+// ===============================
+// DG LOGÍSTICA REVERSA
+// SCRIPT.JS
+// ===============================
 
-// Loader
-window.addEventListener("load", () => {
-const loader = document.getElementById("loader");
-if (loader) {
-setTimeout(() => {
-loader.style.opacity = "0";
-loader.style.pointerEvents = "none";
+document.addEventListener("DOMContentLoaded", () => {
 
-setTimeout(() => {
-loader.remove();
-}, 500);
-}, 700);
-}
-});
+    // Loader
+    const loader = document.getElementById("loader");
 
-// Scroll Reveal
-const reveals = document.querySelectorAll(".fade-up");
+    window.addEventListener("load", () => {
+        if (loader) {
+            loader.style.opacity = "0";
+            setTimeout(() => {
+                loader.style.display = "none";
+            }, 500);
+        }
+    });
 
-const revealOnScroll = () => {
+    // Navbar
+    const navbar = document.querySelector(".navbar");
 
-reveals.forEach((el) => {
+    window.addEventListener("scroll", () => {
 
-const top = el.getBoundingClientRect().top;
+        if (window.scrollY > 80) {
 
-if (top < window.innerHeight - 80) {
+            navbar.style.background = "#111";
 
-el.classList.add("show");
+            navbar.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
 
-}
+        } else {
 
-});
+            navbar.style.background = "rgba(0,0,0,.45)";
 
-};
+            navbar.style.boxShadow = "none";
 
-window.addEventListener("scroll", revealOnScroll);
+        }
 
-revealOnScroll();
+    });
 
-// Contador animado
+    // Contadores
 
-const counters = document.querySelectorAll("[data-counter]");
+    const numeros = document.querySelectorAll("[data-target]");
 
-const startCounter = () => {
+    const animarNumero = (el) => {
 
-counters.forEach(counter => {
+        const alvo = Number(el.dataset.target);
 
-if (counter.dataset.started) return;
+        let valor = 0;
 
-const top = counter.getBoundingClientRect().top;
+        const incremento = alvo / 80;
 
-if (top < window.innerHeight - 100) {
+        const timer = setInterval(() => {
 
-counter.dataset.started = true;
+            valor += incremento;
 
-const max = Number(counter.dataset.counter);
+            if (valor >= alvo) {
 
-let n = 0;
+                valor = alvo;
 
-const timer = setInterval(() => {
+                clearInterval(timer);
 
-n += Math.ceil(max / 60);
+            }
 
-if (n >= max) {
+            el.textContent = Math.floor(valor);
 
-n = max;
+        }, 20);
 
-clearInterval(timer);
+    };
 
-}
+    const observer = new IntersectionObserver((entries) => {
 
-counter.innerHTML = n.toLocaleString("pt-BR");
+        entries.forEach(entry => {
 
-}, 20);
+            if (entry.isIntersecting) {
 
-}
+                animarNumero(entry.target);
 
-});
+                observer.unobserve(entry.target);
 
-};
+            }
 
-window.addEventListener("scroll", startCounter);
+        });
 
-startCounter();
+    });
 
-// Navbar
+    numeros.forEach(el => observer.observe(el));
 
-window.addEventListener("scroll", () => {
+    // ===============================
+    // CALCULADORA
+    // ===============================
 
-const nav = document.querySelector(".navbar");
+    const btn = document.getElementById("calcular");
 
-if (!nav) return;
+    if(btn){
 
-if (window.scrollY > 40) {
+        btn.addEventListener("click",()=>{
 
-nav.style.background = "#0f1115";
+            const investimento =
+            Number(document.getElementById("investimento").value);
 
-nav.style.padding = "10px 0";
+            if(!investimento){
 
-} else {
+                alert("Digite um valor.");
 
-nav.style.background = "rgba(0,0,0,.55)";
+                return;
 
-nav.style.padding = "15px 0";
+            }
 
-}
+            const categoria =
+            document.getElementById("categoria").selectedIndex;
 
-});
+            let percentualMercado = 0;
 
-// Scroll suave
+            switch(categoria){
 
-document.querySelectorAll('a[href^="#"]').forEach(link => {
+                case 0: // Smartphones
 
-link.addEventListener("click", e => {
+                    percentualMercado = 0.40;
 
-const destino = document.querySelector(link.getAttribute("href"));
+                break;
 
-if (!destino) return;
+                case 1: // Eletrônicos
 
-e.preventDefault();
+                    percentualMercado = 0.40;
 
-destino.scrollIntoView({
+                break;
 
-behavior: "smooth"
+                case 2: // Ferramentas
 
-});
+                    percentualMercado = 0.40;
 
-});
+                break;
 
-});
+                case 3: // Linha branca
 
-/* =======================
-CALCULADORA DE LUCRO
-======================= */
+                    percentualMercado = 0.55;
 
-const calcular = document.getElementById("calcular");
+                break;
 
-if (calcular) {
+                case 4: // Utilidades
 
-calcular.onclick = () => {
+                    percentualMercado = 0.45;
 
-const investimento = Number(document.getElementById("investimento").value);
+                break;
 
-const categoria = Number(document.getElementById("categoria").value);
+            }
 
-if (!investimento || investimento <= 0) {
+            const valorMercado =
+            investimento/percentualMercado;
 
-alert("Informe um valor.");
+            const economia =
+            valorMercado-investimento;
 
-return;
+            const roi =
+            (economia/investimento)*100;
 
-}
+            document.getElementById("valorInvestimento").innerHTML =
+            investimento.toLocaleString("pt-BR",{
+                style:"currency",
+                currency:"BRL"
+            });
 
-const faturamento = investimento * categoria;
+            document.getElementById("valorFaturamento").innerHTML =
+            valorMercado.toLocaleString("pt-BR",{
+                style:"currency",
+                currency:"BRL"
+            });
 
-const lucro = faturamento - investimento;
+            document.getElementById("valorLucro").innerHTML =
+            economia.toLocaleString("pt-BR",{
+                style:"currency",
+                currency:"BRL"
+            });
 
-document.getElementById("valorInvestido").innerHTML =
-investimento.toLocaleString("pt-BR", {
-style: "currency",
-currency: "BRL"
-});
+            document.getElementById("valorROI").innerHTML =
+            roi.toFixed(0)+"%";
 
-document.getElementById("valorVenda").innerHTML =
-faturamento.toLocaleString("pt-BR", {
-style: "currency",
-currency: "BRL"
-});
+            const categoriaNome =
+            document.getElementById("categoria").options[categoria].text;
 
-document.getElementById("valorLucro").innerHTML =
-lucro.toLocaleString("pt-BR", {
-style: "currency",
-currency: "BRL"
-});
+            const texto =
+`Olá!
 
-};
+Fiz uma simulação no site.
 
-}
+Categoria: ${categoriaNome}
 
-/* =======================
-GALERIA
-======================= */
+Investimento:
+${investimento.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 
-document.querySelectorAll(".gallery-img").forEach(img => {
+Valor de Mercado:
+${valorMercado.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 
-img.onclick = () => {
+Economia:
+${economia.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 
-window.open(img.src);
+Gostaria de receber os lotes disponíveis.`;
 
-};
+            document.getElementById("btnWhatsapp").href =
+            "https://wa.me/55SEUNUMERO?text="+encodeURIComponent(texto);
 
-});
+        });
 
-/* =======================
-BOTÃO WHATSAPP
-======================= */
-
-const whatsapp = document.querySelector(".whatsapp-float");
-
-if (whatsapp) {
-
-whatsapp.addEventListener("mouseenter", () => {
-
-whatsapp.style.transform = "scale(1.12)";
+    }
 
 });
-
-whatsapp.addEventListener("mouseleave", () => {
-
-whatsapp.style.transform = "scale(1)";
-
-});
-
-}
-
-/* =======================
-EFEITO DIGITAÇÃO
-======================= */
-
-const typing = document.querySelector(".typing");
-
-if (typing) {
-
-const texto = typing.innerHTML;
-
-typing.innerHTML = "";
-
-let i = 0;
-
-const escrever = () => {
-
-if (i < texto.length) {
-
-typing.innerHTML += texto.charAt(i);
-
-i++;
-
-setTimeout(escrever, 45);
-
-}
-
-}
-
-escrever();
-
-}
-
-/* =======================
-BOTÃO VOLTAR AO TOPO
-======================= */
-
-const voltar = document.createElement("div");
-
-voltar.innerHTML = "↑";
-
-voltar.style.position = "fixed";
-
-voltar.style.right = "25px";
-
-voltar.style.bottom = "110px";
-
-voltar.style.width = "55px";
-
-voltar.style.height = "55px";
-
-voltar.style.display = "flex";
-
-voltar.style.alignItems = "center";
-
-voltar.style.justifyContent = "center";
-
-voltar.style.background = "#ffb400";
-
-voltar.style.color = "#000";
-
-voltar.style.fontSize = "28px";
-
-voltar.style.fontWeight = "bold";
-
-voltar.style.borderRadius = "50%";
-
-voltar.style.cursor = "pointer";
-
-voltar.style.zIndex = "999";
-
-voltar.style.opacity = "0";
-
-voltar.style.transition = ".3s";
-
-document.body.appendChild(voltar);
-
-window.addEventListener("scroll", () => {
-
-if (window.scrollY > 500) {
-
-voltar.style.opacity = "1";
-
-} else {
-
-voltar.style.opacity = "0";
-
-}
-
-});
-
-voltar.onclick = () => {
-
-window.scrollTo({
-
-top: 0,
-
-behavior: "smooth"
-
-});
-
-};
-
